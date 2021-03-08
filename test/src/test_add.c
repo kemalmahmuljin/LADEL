@@ -87,7 +87,7 @@ MU_TEST(test_add_symmetric_matrices)
 
     ladel_symbolics *sym = ladel_symbolics_alloc(NCOL);
     ladel_factor *LD;
-    ladel_factorize(C, sym, NO_ORDERING, &LD, work);
+    ladel_factorize(C, sym, NO_ORDERING, 0, &LD, work);
     ladel_dense_solve(LD, x, y, work);
     
     for (index = 0; index < NCOL; index++)

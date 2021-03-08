@@ -52,6 +52,7 @@
 ladel_int ladel_factorize(  ladel_sparse_matrix *M, 
                             ladel_symbolics     *sym, 
                             ladel_int           ordering_method, 
+                            ladel_int           num_fixed,
                             ladel_factor        **LD, 
                             ladel_work          *work);
 
@@ -70,6 +71,7 @@ ladel_int ladel_factorize_with_diag(ladel_sparse_matrix *M,
                                     ladel_diag          d, 
                                     ladel_symbolics     *sym, 
                                     ladel_int           ordering_method, 
+                                    ladel_int           num_fixed,
                                     ladel_factor        **LD, 
                                     ladel_work          *work);
 
@@ -91,6 +93,7 @@ ladel_int ladel_factorize_with_diag(ladel_sparse_matrix *M,
 ladel_int ladel_factorize_advanced( ladel_sparse_matrix *M, 
                                     ladel_symbolics     *sym, 
                                     ladel_int           ordering_method, 
+                                    ladel_int           num_fixed,
                                     ladel_factor        **LD, 
                                     ladel_sparse_matrix *Mbasis, 
                                     ladel_work          *work);
@@ -115,6 +118,7 @@ ladel_int ladel_factorize_advanced_with_diag(   ladel_sparse_matrix *M,
                                                 ladel_diag          d, 
                                                 ladel_symbolics     *sym, 
                                                 ladel_int           ordering_method, 
+                                                ladel_int           num_fixed,
                                                 ladel_factor        **LD, 
                                                 ladel_sparse_matrix *Mbasis, 
                                                 ladel_work          *work);

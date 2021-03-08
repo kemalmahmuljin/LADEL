@@ -6,12 +6,13 @@
 #include "ladel_postorder.h"
 #include "ladel_col_counts.h"
 #include "ladel_debug_print.h"
+#include "ladel_submatrix.h"
 
 #ifdef DAMD
 #include "amd.h"
 #endif /*DAMD*/
 
-ladel_int ladel_ldl_symbolic(ladel_sparse_matrix *M, ladel_symbolics *sym, ladel_int ordering_method, ladel_sparse_matrix *Mpp, ladel_work* work)
+ladel_int ladel_ldl_symbolic(ladel_sparse_matrix *M, ladel_symbolics *sym, ladel_int ordering_method, ladel_int num_fixed, ladel_sparse_matrix *Mpp, ladel_work* work)
 {
     if (!M || !sym || !Mpp || !work) return FAIL;
 
@@ -33,8 +34,20 @@ ladel_int ladel_ldl_symbolic(ladel_sparse_matrix *M, ladel_symbolics *sym, ladel
         sym->p = ladel_free(sym->p);
         #endif
     } else if (ordering_method == GIVEN_ORDERING)
-    {
-        /*do nothing, sym->p already contains the permutation*/
+    {   
+        
+        // This means AMD but, num_fixed last cols and rows unchanged
+        ladel_int status, pattern = 0;
+        double Info [AMD_INFO];
+
+        ladel_sparse_matrix *M_sub = ladel_leading_principal_submatrix(M, num_fixed, pattern); 
+        status = amd_l_order(M_sub->ncol, M_sub->p, M_sub->i, sym->p, NULL, Info);
+    
+        for (int i=M_sub->ncol; i< M->ncol; i++)
+        {
+            sym->p[i] = i;
+        }
+        ladel_sparse_free(M_sub);
     } else if (ordering_method == NO_ORDERING)
     {
         sym->p = ladel_free(sym->p);
@@ -46,7 +59,6 @@ ladel_int ladel_ldl_symbolic(ladel_sparse_matrix *M, ladel_symbolics *sym, ladel
         Mwork = Mpp;
         ladel_invert_permutation_vector(sym->p, sym->pinv, M->ncol);
     }
-
     #ifdef SIMPLE_COL_COUNTS
     ladel_etree_and_col_counts(Mwork, sym, work);
     #else

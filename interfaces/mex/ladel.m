@@ -77,7 +77,35 @@ classdef ladel < handle
             end
                     
         end
-        
+%
+        function varargout = factorize_advanced_with_fixed_part(~, M, Mbasis, varargin)
+            M = triu(M);
+            Mbasis = triu(Mbasis);
+            if nargin == 5
+                ordering = varargin{1};
+                fixed_num = varargin{2};
+                ladel_mex('factorize_advanced_with_fixed_part', M, Mbasis, ordering, fixed_num);
+            else
+                error('Wrong number of input arguments for factorize_advanced_with_fixed_part');
+            end
+            
+            if nargout > 0
+                if nargout == 2
+                    [L, D] = ladel_mex('return');
+                    varargout{1} = L;
+                    varargout{2} = D;
+                elseif nargout == 3
+                    [L, D, p] = ladel_mex('return');
+                    varargout{1} = L;
+                    varargout{2} = D;
+                    varargout{3} = p;
+                else
+                    error('Wrong number of output arguments for factorize_advanced');
+                end
+            end
+                    
+        end
+%
         function varargout = factorize_with_prior_basis(~, M)
             M = triu(M);         
             ladel_mex('factorize_with_prior_basis', M);

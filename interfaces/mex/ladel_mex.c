@@ -8,6 +8,7 @@
 #define MODE_INIT "init"
 #define MODE_FACTORIZE_REGULAR "factorize"
 #define MODE_FACTORIZE_ADVANCED "factorize_advanced"
+#define MODE_FACTORIZE_ADVANCED_WITH_FIXED_PART "factorize_advanced_with_fixed_part"
 #define MODE_FACTORIZE_WITH_PRIOR_BASIS "factorize_with_prior_basis"
 #define MODE_ROW_MOD "rowmod"
 #define MODE_DENSE_SOLVE "solve"
@@ -187,7 +188,7 @@ void mexFunction(int nlhs, mxArray * plhs [], int nrhs, const mxArray * prhs [])
         else
             ordering = NO_ORDERING;
         
-        ladel_int status = ladel_factorize(M, sym, ordering, &LD, work);
+        ladel_int status = ladel_factorize(M, sym, ordering, 0, &LD, work);
         if (status != SUCCESS)
             mexErrMsgTxt("Factorize: Something went wrong in the factorization.");
 
@@ -213,11 +214,33 @@ void mexFunction(int nlhs, mxArray * plhs [], int nrhs, const mxArray * prhs [])
             ordering = NO_ORDERING;
         
 
-        ladel_int status = ladel_factorize_advanced(M, sym, ordering, &LD, Mbasis, work);
+        ladel_int status = ladel_factorize_advanced(M, sym, ordering, 0, &LD, Mbasis, work);
         if (status != SUCCESS)
             mexErrMsgTxt("Factorize_advanced: Something went wrong in the factorization.");
 
         return;
+    }
+    else if (strcmp(cmd, MODE_FACTORIZE_ADVANCED_WITH_FIXED_PART) == 0) // assumes ordering given and num eqs too
+    {
+        if (nlhs != 0  || nrhs != 5)
+            mexErrMsgTxt("Wrong number of input or output arguments for mode factorize_advanced_with_fixed_part."); 
+        
+        ladel_sparse_matrix Mmatlab;
+        ladel_sparse_matrix *M = ladel_get_sparse_from_matlab(prhs[1], &Mmatlab, UPPER);
+
+        ladel_sparse_matrix Mbasismatlab;
+        ladel_sparse_matrix *Mbasis = ladel_get_sparse_from_matlab(prhs[2], &Mbasismatlab, UPPER);
+
+        ladel_int ordering = (ladel_int) *mxGetPr(prhs[3]);
+        ladel_int fixed_num = (ladel_int) *mxGetPr(prhs[4]);
+
+        ladel_int status = ladel_factorize_advanced(M, sym, ordering, fixed_num, &LD, Mbasis, work);
+
+        if (status != SUCCESS)
+            mexErrMsgTxt("Factorize_advanced: Something went wrong in the factorization.");
+
+        return;
+
     }
     else if (strcmp(cmd, MODE_FACTORIZE_WITH_PRIOR_BASIS) == 0)
     {

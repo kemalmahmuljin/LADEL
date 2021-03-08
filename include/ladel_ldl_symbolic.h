@@ -22,6 +22,7 @@
 ladel_int ladel_ldl_symbolic(   ladel_sparse_matrix *M, 
                                 ladel_symbolics     *sym, 
                                 ladel_int           ordering_method, 
+                                ladel_int           num_fixed,
                                 ladel_sparse_matrix *Mpp, 
                                 ladel_work          *work);
 

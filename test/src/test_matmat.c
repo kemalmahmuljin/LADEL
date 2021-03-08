@@ -56,7 +56,7 @@ MU_TEST(test_mat_diag_mat_transpose)
 
     ladel_symbolics *sym = ladel_symbolics_alloc(NROW);
     ladel_factor *LD;
-    ladel_factorize(MMt, sym, NO_ORDERING, &LD, work);
+    ladel_factorize(MMt, sym, NO_ORDERING, 0, &LD, work);
     ladel_dense_solve(LD, x, y, work);
     
     for (index = 0; index < NROW; index++)
