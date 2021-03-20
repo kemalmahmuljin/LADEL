@@ -77,7 +77,7 @@ MU_TEST(test_row_add_at_the_end)
 {
     /*Add a row to the end*/
     ladel_int status, index;
-    status = ladel_factorize_advanced(M, sym, NO_ORDERING, 0, &LD, Mbasis, work);
+    status = ladel_factorize_advanced(M, sym, NO_ORDERING, 0, &LD, Mbasis, work, NO_MODIFICATION, 0);
     mu_assert_long_eq(status, SUCCESS);
 
     ladel_double rhs[6] = {5.679645458145579e-01, 6.630438231677197e-01, 5.274175204016522e-01, 

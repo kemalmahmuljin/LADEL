@@ -116,7 +116,7 @@ s = [s obj] ;
 kk = do_cmd (s, kk, details) ;
 
  % clean up
-s = ['delete ' obj] ;
+s = ['delete ' obj];
 do_cmd (s, kk, details) ;
 fprintf ('\nLADEL successfully compiled\n') ;
 

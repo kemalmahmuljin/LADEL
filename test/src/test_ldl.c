@@ -7,8 +7,6 @@
 #include "ladel_ldl_symbolic.h"
 
 
-#include <stdio.h> // printf
-
 #define NCOL 5
 #define NROW 5
 #define NZMAX 10
@@ -20,9 +18,9 @@
 
 static ladel_work *work;
 static ladel_work *work2;
-static ladel_sparse_matrix *M, *Mbasis, *Mpp, *Mwork;
+static ladel_sparse_matrix *M, *Mbasis;
 static ladel_sparse_matrix *M2, *Mnz;
-static ladel_symbolics *sym, *symm;
+static ladel_symbolics *sym;
 static ladel_factor *LD;
 static ladel_symbolics *sym2;
 static ladel_factor *LD2;
@@ -171,7 +169,7 @@ MU_TEST(test_simple_ldl_with_amd)
     ladel_double y[NCOL], y_ref[NCOL] = {-1.738103756708408e-01, -1.081932021466905e-01, 4.379964221824687e-01, 3.594991055456172e-01, -7.519141323792485e-01};
 
     ladel_int status = ladel_factorize(M, sym, AMD, 0, &LD, work);
-    ladel_print_dense_int_vector_matlab(sym->p, sym->ncol);
+    //ladel_print_dense_int_vector_matlab(sym->p, sym->ncol);
     mu_assert_long_eq(status, SUCCESS);
     ladel_dense_solve(LD, x, y, work);
     ladel_int index;
@@ -187,11 +185,8 @@ MU_TEST(test_advanced_ldl)
     ladel_double x[NCOL] = {1, 2, 3, 4, 5};
     ladel_double y[NCOL], y_ref[NCOL] = {-1.738103756708408e-01, -1.081932021466905e-01, 4.379964221824687e-01, 3.594991055456172e-01, -7.519141323792485e-01};
 
-    ladel_int status = ladel_factorize_advanced(M, sym, NO_ORDERING, 0, &LD, Mbasis, work);
-
-for (int i=0; i<sym->ncol;i++){
-    printf("Some perms %d, \n",sym->p[i]);
-}
+    ladel_int status = ladel_factorize_advanced(M, sym, NO_ORDERING, 0, &LD, Mbasis, work, NO_MODIFICATION, 0);
+    
     mu_assert_long_eq(status, SUCCESS);
     ladel_dense_solve(LD, x, y, work);
     ladel_int index;
@@ -200,12 +195,24 @@ for (int i=0; i<sym->ncol;i++){
         mu_assert_double_eq(y[index], y_ref[index], TOL);
 }
 
-MU_TEST(test_fixed_part)
+MU_TEST(test_advanced_ldl_with_modification)
 {
-
-    ladel_int num_fixed = 2, pattern = 1;
-    ladel_int status = ladel_factorize_advanced(M, sym, GIVEN_ORDERING, num_fixed, &LD, Mbasis, work);
+ 
+    ladel_double *error_array = ladel_malloc(M->ncol, sizeof(ladel_double));
+    ladel_double beta = 5.0;
+    ladel_int status = ladel_factorize_advanced(M, sym, NO_ORDERING, 0, &LD, Mbasis, work, error_array, beta);
     mu_assert_long_eq(status, SUCCESS);
+
+}
+
+MU_TEST(test_fixed_part)
+{    
+
+    ladel_int num_fixed = 2;
+    ladel_int status = ladel_factorize_advanced(M, sym, GIVEN_ORDERING, num_fixed, &LD, Mbasis, work, NO_MODIFICATION, 0);
+    mu_assert_long_eq(status, SUCCESS);
+    for (int index = 0; index < NCOL; index++)
+        mu_assert_int_eq(sym->p[index], index);
 }
 
 MU_TEST_SUITE(suite_ldl)
@@ -221,4 +228,5 @@ MU_TEST_SUITE(suite_ldl)
     #endif
     MU_RUN_TEST(test_advanced_ldl);
     MU_RUN_TEST(test_fixed_part);
+    MU_RUN_TEST(test_advanced_ldl_with_modification);
 }

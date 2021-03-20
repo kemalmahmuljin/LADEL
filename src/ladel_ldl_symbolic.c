@@ -37,7 +37,7 @@ ladel_int ladel_ldl_symbolic(ladel_sparse_matrix *M, ladel_symbolics *sym, ladel
     {   
         
         // This means AMD but, num_fixed last cols and rows unchanged
-        ladel_int status, pattern = 0;
+        ladel_int status, pattern = 1;
         double Info [AMD_INFO];
 
         ladel_sparse_matrix *M_sub = ladel_leading_principal_submatrix(M, num_fixed, pattern); 

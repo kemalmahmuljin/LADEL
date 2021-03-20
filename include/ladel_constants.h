@@ -39,6 +39,8 @@
 #define UPDATE TRUE /**< Flag in rank1_update to perform an update */
 #define DOWNDATE FALSE /**< Flag in rank1_update to perform a downdate */
 
+#define NO_MODIFICATION NULL /**< Indicate that modified LDL should not be used */
+
 /**
  * @}
  */
@@ -51,7 +53,7 @@
 #define LADEL_MAX(a, b) ((a) > (b) ? (a) : (b)) /**< Return the maximum of two numbers */
 #define LADEL_MIN(a, b) ((a) > (b) ? (b) : (a)) /**< Return the minimum of two numbers */
 #define LADEL_ABS(a) ((a) < 0 ? -(a) : (a))     /**< Return the absolute value a number */
-
+#define LADEL_SIGN(a) ((a > 0) ? 1 : ((a < 0) ? -1 : 0)) /**< Return the sign value of a number */
 #define LADEL_FOR(index, M, col) for(index = (M)->p[(col)]; index < (((M)->nz) ? (M)->p[(col)] + (M)->nz[(col)] : (M)->p[(col)+1]); index++) /**< Loop through a column of a sparse matrix */
 
 #define IS_ROOT(col, etree) ((etree)[(col)] == NONE) /**< Check whether a node is a root (i.e. has no parent) */

@@ -96,7 +96,9 @@ ladel_int ladel_factorize_advanced( ladel_sparse_matrix *M,
                                     ladel_int           num_fixed,
                                     ladel_factor        **LD, 
                                     ladel_sparse_matrix *Mbasis, 
-                                    ladel_work          *work);
+                                    ladel_work          *work, 
+                                    ladel_double        *error_array, 
+                                    ladel_double        beta);
 
 /**
  * Computes the @f$LDL^T@f$ factorization of @f$M+ \alpha \begin{bmatrix}I_{n} & \\ & 0\end{bmatrix},@f$ but allocates based on @a Mbasis.
@@ -121,7 +123,9 @@ ladel_int ladel_factorize_advanced_with_diag(   ladel_sparse_matrix *M,
                                                 ladel_int           num_fixed,
                                                 ladel_factor        **LD, 
                                                 ladel_sparse_matrix *Mbasis, 
-                                                ladel_work          *work);
+                                                ladel_work          *work, 
+                                                ladel_double        *error_array, 
+                                                ladel_double        beta);
 
 /**
  * Computes the @f$LDL^T@f$ factorization of @f$M,@f$ provided @a LD was allocated before.
@@ -135,7 +139,9 @@ ladel_int ladel_factorize_advanced_with_diag(   ladel_sparse_matrix *M,
 ladel_int ladel_factorize_with_prior_basis( ladel_sparse_matrix *M, 
                                             ladel_symbolics     *sym, 
                                             ladel_factor        *LD, 
-                                            ladel_work          *work);
+                                            ladel_work          *work, 
+                                            ladel_double        *error_array, 
+                                            ladel_double        beta);
 
 /**
  * Computes the @f$LDL^T@f$ factorization of @f$M+ \alpha \begin{bmatrix}I_{n} & \\ & 0\end{bmatrix},@f$ 
@@ -152,7 +158,9 @@ ladel_int ladel_factorize_with_prior_basis_with_diag(   ladel_sparse_matrix *M,
                                                         ladel_diag          d, 
                                                         ladel_symbolics     *sym, 
                                                         ladel_factor        *LD, 
-                                                        ladel_work          *work);
+                                                        ladel_work          *work, 
+                                                        ladel_double*       error_array, 
+                                                        ladel_double        beta);
 
 /**
  * Computes @f$y = LDL^T \backslash rhs@f$.
