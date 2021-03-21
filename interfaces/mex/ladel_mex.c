@@ -220,8 +220,8 @@ void mexFunction(int nlhs, mxArray * plhs [], int nrhs, const mxArray * prhs [])
         return;
     }
     else if (strcmp(cmd, MODE_FACTORIZE_ADVANCED_WITH_FIXED_PART) == 0) // assumes ordering given and num eqs too
-    {
-        if ( !(nlhs == 0 && nrhs == 5) || !(nlhs == 1 && nrhs == 6)) 
+    {   // (!( nlhs == 0 || nrhs == 2 || (nlhs == 1 && nrhs == 3)))
+        if ((nlhs != 0 && nlhs !=1)  || (nrhs != 5 && nrhs != 6)) //( !(nlhs == 0 && nrhs == 5) || !(nlhs == 1 && nrhs == 6)) 
             mexErrMsgTxt("Wrong number of input or output arguments for mode factorize_advanced_with_fixed_part."); 
         
         ladel_sparse_matrix Mmatlab;
@@ -256,7 +256,7 @@ void mexFunction(int nlhs, mxArray * plhs [], int nrhs, const mxArray * prhs [])
     }
     else if (strcmp(cmd, MODE_FACTORIZE_WITH_PRIOR_BASIS) == 0)
     { 
-        if ( !(nlhs == 0 && nrhs == 2) || !(nlhs == 1 && nrhs == 3))
+        if (!( nlhs == 0 || nrhs == 2 || (nlhs == 1 && nrhs == 3)))
             mexErrMsgTxt("Wrong number of input or output arguments for mode factorize_with_prior_basis.");
 
         ladel_sparse_matrix Mmatlab;

@@ -174,11 +174,14 @@ ladel_int ladel_ldl_numeric_with_modification(ladel_sparse_matrix *Mpp, ladel_di
         }
         theta = 0.0;
         for (index = C->p[col]; index < C->p[col+1]; index++)
-            theta = LADEL_MAX(theta, LADEL_ABS(C->x[index]));
+            // if (LADEL_SIGN(theta) == 1)
+                theta = LADEL_MAX(theta, LADEL_ABS(C->x[index]));
         
         /*Return FAIL if eigenvalue (close to) zero*/
-        error_array[col] = diag_elem;
+        error_array[col] = Mppt->x[Mppt->p[col]] /*diag_elem*/;
         diag_elem = LADEL_SIGN(Mppt->x[Mppt->p[col]])*LADEL_MAX(LADEL_ABS(Mppt->x[Mppt->p[col]]), LADEL_MAX(theta*theta/beta, 1e-15));
+        // ladel_print("\nCorrect diagonal value %f, Concurring value %f.\n", Mppt->x[Mppt->p[col]], theta*theta/beta);
+        // diag_elem = LADEL_MAX(LADEL_ABS(Mppt->x[Mppt->p[col]]), LADEL_MAX(theta*theta/beta, 1e-15));
         error_array[col] -= diag_elem;
         if (LADEL_ABS(diag_elem) < 1e-15) 
         {
@@ -202,10 +205,6 @@ ladel_int ladel_ldl_numeric_with_modification(ladel_sparse_matrix *Mpp, ladel_di
     for (index = 0; index < ncol; index++) L->nz[index] = col_pointers[index] - L->p[index];
     return SUCCESS;
 }
-
-
-
-
 
 
 ladel_int ladel_ldl_numeric(ladel_sparse_matrix *Mpp, ladel_symbolics *sym, ladel_factor *LD, ladel_work* work, ladel_double* error_array, ladel_double beta)

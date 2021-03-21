@@ -85,6 +85,11 @@ classdef ladel < handle
                 ordering = varargin{1};
                 fixed_num = varargin{2};
                 ladel_mex('factorize_advanced_with_fixed_part', M, Mbasis, ordering, fixed_num);
+            elseif nargin ==6
+                ordering = varargin{1};
+                fixed_num = varargin{2};
+                beta = varargin{3};
+                error_array = ladel_mex('factorize_advanced_with_fixed_part', M, Mbasis, ordering, fixed_num, beta);        
             else
                 error('Wrong number of input arguments for factorize_advanced_with_fixed_part');
             end
@@ -94,11 +99,17 @@ classdef ladel < handle
                     [L, D] = ladel_mex('return');
                     varargout{1} = L;
                     varargout{2} = D;
+                    if nargin == 6
+                        varargout{3} = error_array;
+                    end
                 elseif nargout == 3
                     [L, D, p] = ladel_mex('return');
                     varargout{1} = L;
                     varargout{2} = D;
                     varargout{3} = p;
+                    if nargin == 6
+                        varargout{4} = error_array;
+                    end
                 else
                     error('Wrong number of output arguments for factorize_advanced');
                 end
@@ -106,19 +117,30 @@ classdef ladel < handle
                     
         end
 %
-        function varargout = factorize_with_prior_basis(~, M)
+        function varargout = factorize_with_prior_basis(~, M, varargin)
             M = triu(M);         
-            ladel_mex('factorize_with_prior_basis', M);
+            if nargin == 3
+                error_array = ladel_mex('factorize_with_prior_basis', M);
+            else 
+                ladel_mex('factorize_with_prior_basis', M);
+            end
+            
             if nargout > 0
                 if nargout == 2
                     [L, D] = ladel_mex('return');
                     varargout{1} = L;
                     varargout{2} = D;
+                    if nargin == 3
+                        varargout{3} = error_array;
+                    end
                 elseif nargout == 3
                     [L, D, p] = ladel_mex('return');
                     varargout{1} = L;
                     varargout{2} = D;
                     varargout{3} = p;
+                    if nargin == 3
+                        varargout{4} = error_array;
+                    end
                 else
                     error('Wrong number of output arguments for factorize_with_prior_basis');
                 end
