@@ -191,14 +191,21 @@ ladel_factor *ladel_factor_free(ladel_factor *LD)
     ladel_free(LD->Dinv);
     ladel_free(LD->p);
     ladel_free(LD->pinv);
+    if (LD->E) ladel_free(LD->E);
     return (ladel_factor *) ladel_free(LD);
 }
 
-ladel_factor *ladel_factor_allocate(ladel_symbolics *sym)
+ladel_factor *ladel_factor_allocate(ladel_symbolics *sym, ladel_int errFLAG, ladel_double reg)
 {
     ladel_factor *LD = (ladel_factor *) ladel_calloc(1, sizeof(ladel_factor));
     if (!LD || !sym) return NULL;
-    ladel_int ncol = LD->ncol = sym->ncol;
+    ladel_int ncol = LD->ncol = sym->ncol; 
+    if (errFLAG)
+    {
+        LD->REG = reg;
+        LD->DEF_REG = 0/*1e-12*/;//LADEL_E_MACH;
+        LD->E = (ladel_double *) ladel_calloc(ncol, sizeof(ladel_double));
+    }
     LD->L = ladel_sparse_alloc(ncol, ncol, sym->col_counts[ncol-1], UNSYMMETRIC, TRUE, TRUE);
     LD->D = ladel_malloc(ncol, sizeof(ladel_double));
     LD->Dinv = ladel_malloc(ncol, sizeof(ladel_double));

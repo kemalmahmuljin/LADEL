@@ -9,6 +9,12 @@
 
 #include "ladel_types.h"
 
+
+void quicksort(ladel_int *element_list, 
+               ladel_int *ind_list,
+               ladel_int low,
+               ladel_int high);
+               
 /**
  * Symbolic part of the factorization.
  * 
@@ -25,5 +31,7 @@ ladel_int ladel_ldl_symbolic(   ladel_sparse_matrix *M,
                                 ladel_int           num_fixed,
                                 ladel_sparse_matrix *Mpp, 
                                 ladel_work          *work);
+
+
 
 #endif /*LADEL_LDL_SYMBOLIC_H*/

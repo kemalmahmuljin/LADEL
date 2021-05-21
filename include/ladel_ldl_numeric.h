@@ -43,8 +43,9 @@ ladel_int ladel_ldl_numeric_with_modification(ladel_sparse_matrix *Mpp,
                                               ladel_symbolics     *sym, 
                                               ladel_factor        *LD, 
                                               ladel_work          *work,
-                                              ladel_double        *error_array,
-                                              ladel_double        beta);
+                                            //   ladel_double        *error_array,
+                                              ladel_double        beta,
+                                              ladel_int           n);
 
 /**
  * Numerical part of the factorization of @f$M@f$.
@@ -62,7 +63,8 @@ ladel_int ladel_ldl_numeric(ladel_sparse_matrix *Mpp,
                             ladel_symbolics     *sym, 
                             ladel_factor        *LD, 
                             ladel_work          *work,
-                            ladel_double        *error_array,
-                            ladel_double        beta);
+                            // ladel_double        *error_array,
+                            ladel_double        beta,
+                            ladel_int           n);
 
 #endif /*LDL_NUMERIC_H*/

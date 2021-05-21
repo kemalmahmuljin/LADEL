@@ -147,10 +147,12 @@ ladel_factor *ladel_factor_free(ladel_factor *LD);
 /**
  * Allocate a factors struct.
  *  
- * @param sym   Symbolics struct 
+ * @param sym      Symbolics struct 
+ * @param errFLAG  Flag indicticating whether inexact LDL decomposition is to be performed
+ * @param reg      Regularization employed on the diagonals
  * @return      Factors struct
  */
-ladel_factor *ladel_factor_allocate(ladel_symbolics *sym);
+ladel_factor *ladel_factor_allocate(ladel_symbolics *sym, ladel_int errFLAG, ladel_double reg);
 
 /**
  * Free a set.

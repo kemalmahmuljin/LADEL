@@ -2,7 +2,10 @@
 #include "matrix.h"
 #include <string.h>
 #include "ladel.h"
+#include "ladel_matvec.h"
 #include "ladel_mex_util.h"
+#include <stdio.h>
+#include "ladel_debug_print.h"
 
 /* Modes of operation */
 #define MODE_INIT "init"
@@ -12,6 +15,7 @@
 #define MODE_FACTORIZE_WITH_PRIOR_BASIS "factorize_with_prior_basis"
 #define MODE_ROW_MOD "rowmod"
 #define MODE_DENSE_SOLVE "solve"
+// #define MODE_SYMM_MATVEC "symmetric_matvec"
 #define MODE_DELETE "delete"
 #define MODE_RETURN "return"
 
@@ -19,6 +23,7 @@
 static ladel_work* work = NULL;
 static ladel_symbolics *sym = NULL;
 static ladel_factor *LD = NULL;
+// static ladel_double *error_array = NULL;
 
 /* Mex calls this when it closes unexpectedly, freeing the workspace */
 void exitFcn() {
@@ -26,6 +31,9 @@ void exitFcn() {
       ladel_workspace_free(work);
       work = NULL;
   }  
+//   if(error_array != NULL)
+//       ladel_free(error_array);
+//       error_array = NULL;
 }
 
 /**
@@ -43,6 +51,7 @@ void exitFcn() {
  * ladel_mex('rowmod', row_index);
  * ladel_mex('rowmod', row_index, row, diag_elem);
  * y = ladel_mex('solve', x);
+ * y = ladel_mex('symmetric_matvec', M, vec);
  * ladel_mex('delete');
  *
  * @param nlhs Number of output arguments
@@ -74,6 +83,7 @@ void mexFunction(int nlhs, mxArray * plhs [], int nrhs, const mxArray * prhs [])
         ladel_int ncol = (ladel_int) *mxGetPr(prhs[1]);
         work = ladel_workspace_allocate(ncol);
         sym = ladel_symbolics_alloc(ncol);
+        // ladel_double *error_array = (ladel_double *) ladel_calloc(ncol, sizeof(ladel_double));;
         return;
     } 
     else if (strcmp(cmd, MODE_DELETE) == 0) 
@@ -84,6 +94,10 @@ void mexFunction(int nlhs, mxArray * plhs [], int nrhs, const mxArray * prhs [])
             sym = ladel_symbolics_free(sym);
             LD = ladel_factor_free(LD);
         }
+
+        // if(error_array != NULL)
+        //     ladel_free(error_array);
+
         /* Warn if other commands were ignored */
         if (nlhs != 0 || nrhs != 1)
             mexWarnMsgTxt("Delete: Unexpected arguments ignored.");
@@ -96,21 +110,42 @@ void mexFunction(int nlhs, mxArray * plhs [], int nrhs, const mxArray * prhs [])
             mexErrMsgTxt("Wrong number of input or output arguments for mode solve.");
 
         plhs[0] = mxCreateDoubleMatrix(LD->ncol,1,mxREAL);
-        ladel_double *y = mxGetPr(plhs[0]); 
-        ladel_double *x = mxGetPr(prhs[1]); 
+        ladel_double *y = mxGetPr(plhs[0]);
+        ladel_double *x = mxGetPr(prhs[1]);
         ladel_dense_solve(LD, x, y, work);
-
         return;
     }
+    // else if (strcmp(cmd, MODE_SYMM_MATVEC) == 0)
+    // {
+    //     if (nlhs != 1 || nrhs != 3)
+    //         mexErrMsgTxt("Wrong number of input or output arguments for mode symmetric_matvec.");
+
+    //     ladel_sparse_matrix Mmatlab;
+    //     ladel_sparse_matrix *M = ladel_get_sparse_from_matlab(prhs[1], &Mmatlab, UPPER);    
+    //     plhs[0] = mxCreateDoubleMatrix(M->ncol,1,mxREAL);
+    //     ladel_double *y = mxGetPr(plhs[0]);    
+    //     ladel_double *x = mxGetPr(prhs[2]);
+    //     ladel_symmetric_matvec(M, x, y, 1);
+    //     return;
+    // }
     else if (strcmp(cmd, MODE_RETURN) == 0)
     {
-        if (nlhs != 2 && nlhs != 3)
+        if  ( !( ( (nlhs==1 || nlhs == 4) && LD->E != NULL ) || (nlhs == 2 || nlhs == 3)) )
             mexErrMsgTxt("Wrong number of output arguments for mode return.");
 
-        if (LD == NULL)
+        if (LD == NULL) 
             mexErrMsgTxt("No factors to return.");
 
         ladel_sparse_matrix *L_sparse = ladel_convert_factor_to_sparse(LD->L);
+        
+        if (nlhs == 1)
+        {
+            plhs[0] = mxCreateDoubleMatrix(LD->ncol, 1, mxREAL);
+            double *E = mxGetPr(plhs[0]);
+            for (ladel_int index = 0; index < LD->ncol; index++) E[index] = (double) LD->E[index];
+        }
+        else
+        {
         plhs[0] = ladel_put_matlab_from_sparse(L_sparse);
 
         plhs[1] = mxCreateDoubleMatrix(LD->ncol, 1, mxREAL);
@@ -120,7 +155,7 @@ void mexFunction(int nlhs, mxArray * plhs [], int nrhs, const mxArray * prhs [])
 
         if (nlhs == 2 && LD->p != NULL)
             mexWarnMsgTxt("Factor has permutation but this is not requested in the output arguments.");
-        if (nlhs == 3)
+        if (nlhs >= 3)
         {
             plhs[2] = mxCreateDoubleMatrix(LD->ncol, 1, mxREAL);
             double *p = mxGetPr(plhs[2]);
@@ -129,11 +164,20 @@ void mexFunction(int nlhs, mxArray * plhs [], int nrhs, const mxArray * prhs [])
             else
                 for (index = 0; index < LD->ncol; index++) p[index] = (double) index+1;                   
         }
+        
+        if (nlhs == 4)
+        {
+            plhs[3] = mxCreateDoubleMatrix(LD->ncol, 1, mxREAL);
+            double *E = mxGetPr(plhs[3]);
+            for (ladel_int index = 0; index < LD->ncol; index++) E[index] = (double) LD->E[index];
+        }
+
+        }
         return;     
     }
     else if (strcmp(cmd, MODE_ROW_MOD) == 0)
     {
-        if (nlhs != 0 || (nrhs != 3 && nrhs != 5))
+        if (nlhs != 0  || !(nrhs == 3 || nrhs == 5 || nrhs == 6)   ) //( !( nlhs == 0 || nlhs == 1) || !(nrhs == 3 || nrhs == 5) )
             mexErrMsgTxt("Wrong number of input or output arguments for mode row_mod.");
 
         if (LD == NULL)
@@ -147,22 +191,36 @@ void mexFunction(int nlhs, mxArray * plhs [], int nrhs, const mxArray * prhs [])
         {
             for (index = 0; index < nb_rows; index++)
             {
-                status = ladel_row_del(LD, sym, --(rows_in_L[index]), work);
+                // ladel_print("\n Deleting\n");
+                if (LD->E) status = ladel_row_del_internal(LD, sym, --(rows_in_L[index]), 0, work);
+                else status = ladel_row_del(LD, sym, --(rows_in_L[index]), work);
                 if (status != SUCCESS)
                     mexErrMsgTxt("Row_mod: Something went wrong in updating the factorization.");
             }
         } 
-        else if (nrhs == 5)
+        else if (nrhs == 5 || nrhs == 6)
         {
             ladel_sparse_matrix Wmatlab;
             ladel_sparse_matrix *W = ladel_get_sparse_from_matlab(prhs[3], &Wmatlab, UNSYMMETRIC);
             /* To not modify the matlab argument in place, we have to copy it */
             ladel_sparse_matrix *W_copy = ladel_sparse_allocate_and_copy(W);
             ladel_double* diag = mxGetPr(prhs[4]);
-
+            ladel_double beta = (ladel_double) *mxGetPr(prhs[4]);
             for (index = 0; index < nb_rows; index++)
             {
-                status = ladel_row_add(LD, sym, --(rows_in_L[index]), W_copy, index, diag[index], work);
+                if (LD->E) 
+                {
+                    if (nrhs != 6)
+                        mexErrMsgTxt("Row_mod: beta argument is missing.");
+
+                    status = ladel_row_add_internal(LD, sym, --(rows_in_L[index]), W_copy, index, diag[index], beta, work);
+                }
+                else{
+                    if (nrhs != 5)
+                        mexErrMsgTxt("Row_mod: Too many arguments.");
+                    // ladel_print("\n ADDING WRONGG\n");
+                    status = ladel_row_add(LD, sym, --(rows_in_L[index]), W_copy, index, diag[index], work);
+                }
                 if (status != SUCCESS)
                 {
                     W_copy = ladel_sparse_free(W_copy);
@@ -213,17 +271,18 @@ void mexFunction(int nlhs, mxArray * plhs [], int nrhs, const mxArray * prhs [])
         else
             ordering = NO_ORDERING;
         
-        ladel_int status = ladel_factorize_advanced(M, sym, ordering, 0, &LD, Mbasis, work, NO_MODIFICATION, 0);
+        ladel_int status = ladel_factorize_advanced(M, sym, ordering, 0, &LD, Mbasis, work, 0, 0);
         if (status != SUCCESS)
             mexErrMsgTxt("Factorize_advanced: Something went wrong in the factorization.");
-
         return;
     }
     else if (strcmp(cmd, MODE_FACTORIZE_ADVANCED_WITH_FIXED_PART) == 0) // assumes ordering given and num eqs too
-    {   // (!( nlhs == 0 || nrhs == 2 || (nlhs == 1 && nrhs == 3)))
-        if ((nlhs != 0 && nlhs !=1)  || (nrhs != 5 && nrhs != 6)) //( !(nlhs == 0 && nrhs == 5) || !(nlhs == 1 && nrhs == 6)) 
+    {   
+        if (nlhs!= 0  || nrhs < 5 || nrhs > 9){
             mexErrMsgTxt("Wrong number of input or output arguments for mode factorize_advanced_with_fixed_part."); 
-        
+        }
+        if (LD != NULL) LD = ladel_factor_free(LD);
+
         ladel_sparse_matrix Mmatlab;
         ladel_sparse_matrix *M = ladel_get_sparse_from_matlab(prhs[1], &Mmatlab, UPPER);
 
@@ -232,56 +291,49 @@ void mexFunction(int nlhs, mxArray * plhs [], int nrhs, const mxArray * prhs [])
 
         ladel_int ordering = (ladel_int) *mxGetPr(prhs[3]);
         ladel_int fixed_num = (ladel_int) *mxGetPr(prhs[4]);
-        ladel_double beta;
-        ladel_double *error_array;
+        ladel_double beta = 0.0;
+        ladel_int n = 0;
+        ladel_double reg = 1E-7;
 
-        if (nlhs == 1)
+        if (nrhs > 5)
         {
-            error_array = ladel_malloc(M->ncol, sizeof(ladel_double));
-            plhs[0] = mxCreateDoubleMatrix(M->ncol, 1, mxREAL);
-            error_array = mxGetPr(plhs[0]);
             beta = (ladel_double) *mxGetPr(prhs[5]);
+            n = (ladel_int) *mxGetPr(prhs[6]);
+            if (nrhs == 8) reg = (ladel_double) *mxGetPr(prhs[7]);
         }
-        else
-        {
-            error_array = NULL;
-            beta = 0;
-        }
-        ladel_int status = ladel_factorize_advanced(M, sym, ordering, fixed_num, &LD, Mbasis, work, error_array, beta);
+        
+        ladel_int status = ladel_factorize_advanced_with_reg(M, sym, ordering, fixed_num, &LD, Mbasis, work, beta, n, reg);
         if (status != SUCCESS)
             mexErrMsgTxt("Factorize_advanced: Something went wrong in the factorization.");
-
+        
         return;
 
     }
     else if (strcmp(cmd, MODE_FACTORIZE_WITH_PRIOR_BASIS) == 0)
     { 
-        if (!( nlhs == 0 || nrhs == 2 || (nlhs == 1 && nrhs == 3)))
+        if (nlhs > 1  || (nrhs!=2 && nrhs!=4 && nrhs!=5) ) 
             mexErrMsgTxt("Wrong number of input or output arguments for mode factorize_with_prior_basis.");
-
+            
+           
         ladel_sparse_matrix Mmatlab;
         ladel_sparse_matrix *M = ladel_get_sparse_from_matlab(prhs[1], &Mmatlab, UPPER);
        
-        ladel_double beta;
-        ladel_double *error_array;
+        ladel_double beta = 0.0;
+        ladel_int n = 0;
+        ladel_double reg = 0.0;
 
-        if (nlhs == 1)
+        if (nrhs > 2)
         {
-            error_array = ladel_malloc(M->ncol, sizeof(ladel_double));
-            plhs[0] = mxCreateDoubleMatrix(M->ncol, 1, mxREAL);
-            error_array = mxGetPr(plhs[0]);
-            beta = (ladel_double) *mxGetPr(prhs[5]);
+            beta = (ladel_double) *mxGetPr(prhs[2]);
+            n = (ladel_int) *mxGetPr(prhs[3]);
+            if (nrhs == 5)
+                reg = (ladel_double) *mxGetPr(prhs[4]);
         }
-        else
-        {
-            error_array = NULL;
-            beta = 0;
-        }
+        
+        ladel_int status = ladel_factorize_with_prior_basis_with_reg(M, sym, LD, work, beta, n, reg);
 
-        ladel_int status = ladel_factorize_with_prior_basis(M, sym, LD, work, error_array, beta );
         if (status != SUCCESS)
             mexErrMsgTxt("Factorize_with_prior_basis: Something went wrong in the factorization.");
-
         return;
     }
     else 

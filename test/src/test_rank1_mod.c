@@ -133,7 +133,7 @@ MU_TEST(test_set_union)
 MU_TEST(test_rank1_mod)
 {
     ladel_int status, index;
-    status = ladel_factorize_advanced(M, sym, NO_ORDERING, 0, &LD, Mbasis, work, NULL, 0);
+    status = ladel_factorize_advanced(M, sym, NO_ORDERING, 0, &LD, Mbasis, work, 0, 0);
     mu_assert_long_eq(status, SUCCESS);
 
     ladel_double rhs[8] = {7.922073295595544e-01, 9.594924263929030e-01, 6.557406991565868e-01,

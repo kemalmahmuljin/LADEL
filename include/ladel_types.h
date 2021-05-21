@@ -64,6 +64,9 @@ typedef struct ldl_factors
     ladel_double *Dinv;     /**< D^-1 in LDL' factorization (stored as vector) */
     ladel_int *p;           /**< permutation vector */
     ladel_int *pinv;        /**< inverse permutation vector */
+    ladel_double DEF_REG;
+    ladel_double REG;
+    ladel_double *E;
 } ladel_factor;
 
 /**

@@ -17,6 +17,20 @@ void ladel_print_sparse_matrix_matlab(ladel_sparse_matrix *M) {
     ladel_print("\n");
 }
 
+/* Print a sparse matrix to file so the output can be entered into matlab */
+void ladel_print_sparse_matrix_matlab_to_file(FILE *fprf, ladel_sparse_matrix *M) {
+    fprintf(fprf, "M = sparse(%ld, %ld);", M->nrow, M->ncol);
+    ladel_int col, index = 0;
+    ladel_double *Mx = M->x;
+    ladel_int *Mi = M->i;
+
+    for (col = 1; col <= M->ncol; col++) {
+        LADEL_FOR(index, M, col-1)
+            fprintf(fprf,"M(%ld, %ld) = %.16le;", Mi[index]+1, col, Mx[index]);
+    }    
+    fprintf(fprf,"\n");
+}
+
 /* Print the entries of a sparse matrix column by column */
 void ladel_print_sparse_matrix_entries(ladel_sparse_matrix *M) {
     ladel_print("Printing entries: \n");
@@ -61,6 +75,15 @@ void ladel_print_dense_int_vector_matlab(ladel_int* x, size_t len) {
         ladel_print("x(%lu) = %ld;", k+1, x[k]);
     }
     ladel_print("\n");
+}
+
+void ladel_print_dense_int_vector_matlab_to_file(FILE *fprf, ladel_int* x, size_t len) {
+    size_t k;
+    fprintf(fprf, "x = zeros(%lu, 1);", len);
+    for (k = 0; k < len; k++) {
+        fprintf(fprf, "x(%lu) = %ld;", k+1, x[k]);
+    }
+    fprintf(fprf, "\n");
 }
 
 void ladel_print_set(ladel_set *set)

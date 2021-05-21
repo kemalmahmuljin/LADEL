@@ -10,7 +10,7 @@
 
 #include "ladel_global.h"
 #include "ladel_types.h"
-
+#include <stdio.h>
 /**
  * Prints output that can be copied into Matlab to retrieve the given matrix.
  * 
@@ -18,6 +18,7 @@
  */
 void ladel_print_sparse_matrix_matlab(ladel_sparse_matrix *M);
 
+void ladel_print_sparse_matrix_matlab_to_file(FILE *fprf, ladel_sparse_matrix *M);
 /**
  * Prints the contents of all entries in a matrix.
  * 
@@ -45,6 +46,8 @@ void ladel_print_dense_vector_matlab(   ladel_double    *x,
  */
 void ladel_print_dense_int_vector_matlab(   ladel_int   *x, 
                                             size_t      len);
+
+void ladel_print_dense_int_vector_matlab_to_file(FILE *fprf, ladel_int* x, size_t len);
 
 /**
  * Prints output that can be copied into Matlab to retrieve the given factor.

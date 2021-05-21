@@ -9,7 +9,9 @@
 #include "ladel_debug_print.h"
 #include <math.h>
 
-ladel_int ladel_row_add(ladel_factor *LD, ladel_symbolics *sym, ladel_int row_in_L, ladel_sparse_matrix *W, ladel_int col_in_W, ladel_double diag, ladel_work *work)
+
+
+ladel_int ladel_row_add_internal(ladel_factor *LD, ladel_symbolics *sym, ladel_int row_in_L, ladel_sparse_matrix *W, ladel_int col_in_W, ladel_double diag, ladel_double beta, ladel_work *work)
 {
     if (!LD || !sym || !W || !work) return FAIL;
     
@@ -37,7 +39,6 @@ ladel_int ladel_row_add(ladel_factor *LD, ladel_symbolics *sym, ladel_int row_in
         ladel_permute_sparse_vector(W, col_in_W, LD->pinv, work);
         row_in_L = LD->pinv[row_in_L];
     }
-    
     /* 1. Solve lower triangular system L11*D11*l12 = W12 */
     
     
@@ -84,6 +85,11 @@ ladel_int ladel_row_add(ladel_factor *LD, ladel_symbolics *sym, ladel_int row_in
         L->nz[row]++;
         if (etree[row] == NONE || etree[row] > row_in_L) etree[row] = row_in_L;
     }
+    if (LD->E && (LADEL_ABS(d22) < LADEL_E_MACH*LADEL_MAX(beta, 1) || d22 > 0) )
+    {
+        LD->E[LD->p[row_in_L]] -= LD->REG + d22;
+        d22 = -LD->REG;
+    }
 
     /* Insert l31 */
     d22 = Dinv[row_in_L] = 1/d22;
@@ -117,7 +123,7 @@ ladel_int ladel_row_add(ladel_factor *LD, ladel_symbolics *sym, ladel_int row_in
     return status;
 }
 
-ladel_int ladel_row_del(ladel_factor *LD, ladel_symbolics *sym, ladel_int row_in_L, ladel_work *work)
+ladel_int ladel_row_del_internal(ladel_factor *LD, ladel_symbolics *sym, ladel_int row_in_L, ladel_double beta, ladel_work *work)
 {
     if (!LD || !sym || !work) return FAIL;
     ladel_int status, index_of_row_in_L, index, found, col,
@@ -199,8 +205,8 @@ ladel_int ladel_row_del(ladel_factor *LD, ladel_symbolics *sym, ladel_int row_in
     
     /* 2. d22_new = 1 */
     d22_old = 1.0/LD->Dinv[row_in_L];
-    LD->Dinv[row_in_L] = 1;
-
+    LD->Dinv[row_in_L] = 1;   //-> problem
+    // if (LD->E) LD->E[row_in_L] = 0;
     /* 4. w = l32_old*sqrt(d22_old) */
     /* 5. Update or downdate L33*D33*L33^T = L33*D33*L33^T + sign(d22_old)*w*w^T */
     status = ladel_rank1_update(LD, sym, L, row_in_L, sqrt(LADEL_ABS(d22_old)), d22_old > 0, work);
@@ -209,4 +215,18 @@ ladel_int ladel_row_del(ladel_factor *LD, ladel_symbolics *sym, ladel_int row_in
     etree[row_in_L] = NONE;
 
     return status;
+}
+
+ladel_int ladel_row_add(ladel_factor *LD, ladel_symbolics *sym, ladel_int row_in_L, ladel_sparse_matrix *W, ladel_int col_in_W, ladel_double diag, ladel_work *work)
+{    
+    ladel_double beta = 0;
+    return ladel_row_add_internal(LD, sym, row_in_L, W, col_in_W, diag, beta, work);
+
+} 
+
+
+ladel_int ladel_row_del(ladel_factor *LD, ladel_symbolics *sym, ladel_int row_in_L, ladel_work *work)
+{
+    ladel_double beta = 0;
+    return ladel_row_del_internal(LD, sym, row_in_L, beta, work);
 }

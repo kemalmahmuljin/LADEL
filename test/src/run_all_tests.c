@@ -16,20 +16,20 @@
 
 int main(){
     MU_INITIALIZE();
-    MU_RUN_SUITE(suite_scale);
-    MU_RUN_SUITE(suite_matvec);
-    MU_RUN_SUITE(suite_matmat);
-    MU_RUN_SUITE(suite_add);
-    MU_RUN_SUITE(suite_submatrix);
-    MU_RUN_SUITE(suite_upper_diag);
-    MU_RUN_SUITE(suite_etree);
-    MU_RUN_SUITE(suite_postorder);
-    MU_RUN_SUITE(suite_transpose);
-    MU_RUN_SUITE(suite_col_counts);
-    MU_RUN_SUITE(suite_permutation);
+    // MU_RUN_SUITE(suite_scale);
+    // MU_RUN_SUITE(suite_matvec);
+    // MU_RUN_SUITE(suite_matmat);
+    // MU_RUN_SUITE(suite_add);
+    // MU_RUN_SUITE(suite_submatrix);
+    // MU_RUN_SUITE(suite_upper_diag);
+    // MU_RUN_SUITE(suite_etree);
+    // MU_RUN_SUITE(suite_postorder);
+    // MU_RUN_SUITE(suite_transpose);
+    // MU_RUN_SUITE(suite_col_counts);
+    // MU_RUN_SUITE(suite_permutation);
     MU_RUN_SUITE(suite_ldl);
-    MU_RUN_SUITE(suite_rank1_mod);
-    MU_RUN_SUITE(suite_row_mod);
+    // MU_RUN_SUITE(suite_rank1_mod);
+    // MU_RUN_SUITE(suite_row_mod);
     MU_REPORT();
     return minunit_fail;
 }

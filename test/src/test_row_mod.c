@@ -77,7 +77,7 @@ MU_TEST(test_row_add_at_the_end)
 {
     /*Add a row to the end*/
     ladel_int status, index;
-    status = ladel_factorize_advanced(M, sym, NO_ORDERING, 0, &LD, Mbasis, work, NO_MODIFICATION, 0);
+    status = ladel_factorize_advanced(M, sym, NO_ORDERING, 0, &LD, Mbasis, work, 0, 0);
     mu_assert_long_eq(status, SUCCESS);
 
     ladel_double rhs[6] = {5.679645458145579e-01, 6.630438231677197e-01, 5.274175204016522e-01, 
@@ -114,8 +114,12 @@ MU_TEST(test_row_del)
     ladel_double sol[6] = {4.509218534985005e+00, 4.780597529712503e+00, 5.274175204016522e-01,
                             -1.025501171241090e+01, -5.435956090455947e-01, 3.878165798320269e+00};
     ladel_double x[6];
+
     ladel_dense_solve(LD, rhs, x, work);
-    for (index = 0; index < NCOL; index++) mu_assert_double_eq(x[index], sol[index], TOL);
+
+    for (index = 0; index < NCOL; index++) 
+        mu_assert_double_eq(x[index], sol[index], TOL);
+    
 }
 
 MU_TEST(test_row_add_in_middle)
